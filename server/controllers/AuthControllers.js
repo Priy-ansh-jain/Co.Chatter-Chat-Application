@@ -10,11 +10,11 @@ const createToken = (email, userId) => {
   });
 };
 
-export const signup = async (request, response) => {
+export const signup = async (req, res) => {
   try {
-    const { email, password } = request.body;
+    const { email, password } = req.body;
     if (!email || !password) {
-      return response
+      return res
         .status(400)
         .json({ message: "Please provide email and password" });
     }
@@ -23,14 +23,14 @@ export const signup = async (request, response) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = await User.create({ email, password: hashedPassword });
 
-    response.cookie("jwt", createToken(email, user.id), {
+    res.cookie("jwt", createToken(email, user.id), {
       maxAge: tokenExpire * 1000, // Convert seconds to milliseconds
       httpOnly: true, // Added for security
       secure: true,
       sameSite: "None",
     });
 
-    return response.status(201).json({
+    return res.status(201).json({
       user: {
         id: user.id,
         email: user.email,
@@ -38,7 +38,7 @@ export const signup = async (request, response) => {
       },
     });
   } catch (error) {
-    return response.status(400).json({ message: error.message });
+    return res.status(400).json({ message: error.message });
   }
 };
 
@@ -62,7 +62,7 @@ export const login = async (req, res) => {
       return res.status(404).json({ message: "Invalid credentials" });
     }
 
-    response.cookie("jwt", createToken(email, user.id), {
+    res.cookie("jwt", createToken(email, user.id), {
       maxAge: tokenExpire * 1000, // Convert seconds to milliseconds
       httpOnly: true, // Added for security
       secure: true,
